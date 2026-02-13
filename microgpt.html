@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Art of GPT</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet" />
+
+  <!-- Prism: light VS Code-style theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #f8f9fb;
+      --surface: #ffffff;
+      --surface2: #f3f4f6;
+      --card: #ffffff;
+      --text: #1e1e2e;
+      --muted: #6b7280;
+      --line: rgba(0,0,0,.08);
+      --accent: #4f46e5;
+      --accent2: #7c3aed;
+      --glow: rgba(79,70,229,.12);
+      --gold: #d97706;
+      --emerald: #059669;
+      --rose: #e11d48;
+      --sky: #0284c7;
+      --amber: #d97706;
+      --shadow: 0 4px 24px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+      --radius: 16px;
+      --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior: smooth; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === HERO HEADER === */
+    .hero{
+      position: relative;
+      overflow: hidden;
+      padding: 80px 40px 60px;
+      text-align: center;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,70,229,.06) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 20% 80%, rgba(2,132,199,.04) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(124,58,237,.04) 0%, transparent 70%),
+        #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='.6' fill='rgba(0,0,0,0.02)'/%3E%3C/svg%3E");
+      pointer-events:none;
+    }
+    .hero-label{
+      display:inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(79,70,229,.06);
+      border: 1px solid rgba(79,70,229,.18);
+      padding: 8px 20px;
+      border-radius: 999px;
+      margin-bottom: 28px;
+    }
+    .hero h1{
+      font-family: var(--serif);
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 900;
+      line-height: 1.05;
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, #1e1e2e 0%, #4f46e5 50%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p{
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* === TWO-PANEL LAYOUT === */
+    .layout{
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px;
+      display:grid;
+      grid-template-columns: 119fr 67fr;
+      gap: 24px;
+      align-items:start;
+    }
+
+    .panel{
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel.code-panel{
+      /* no sticky, no fixed height — code flows naturally */
+    }
+
+    /* === LEFT: CODE PANEL (VS Code Light style) === */
+    .code-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--line);
+    }
+    .code-title{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      min-width:0;
+    }
+    .code-title .name{
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .code-title .sub{
+      color: var(--muted);
+      font-size: 11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .code-body{
+      padding: 0;
+      background: #ffffff;
+    }
+
+    /* Code table: line numbers + code side by side */
+    .code-table{
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.65;
+    }
+    .code-table td{
+      vertical-align: top;
+      padding: 0;
+    }
+    .code-table .line-num{
+      width: 3.5em;
+      min-width: 3.5em;
+      padding: 0 10px 0 12px;
+      text-align: right;
+      color: #b0b4be;
+      -webkit-user-select: none;
+      user-select: none;
+      border-right: 1px solid rgba(0,0,0,.07);
+      white-space: nowrap;
+    }
+    .code-table .line-code{
+      padding: 0 14px 0 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .code-table tr:first-child .line-num,
+    .code-table tr:first-child .line-code{
+      padding-top: 14px;
+    }
+    .code-table tr:last-child .line-num,
+    .code-table tr:last-child .line-code{
+      padding-bottom: 14px;
+    }
+
+    /* Prism overrides — inline only, no positioning hacks */
+    pre[class*="language-"]{
+      margin:0;
+      border-radius:0;
+      background: #ffffff !important;
+      padding: 0 !important;
+      overflow: visible !important;
+    }
+    code[class*="language-"]{
+      font-family: var(--mono);
+      font-size: 12.5px;
+      white-space: pre-wrap !important;
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+
+    /* === RIGHT: TIMELINE PANEL === */
+    .timeline-panel{
+      padding: 32px 24px 48px;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+
+    .timeline{
+      position: relative;
+      margin: 0 auto;
+      padding: 20px 0 60px;
+    }
+
+    /* Center line */
+    .timeline::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:50%;
+      transform:translateX(-50%);
+      width: 2px;
+      height:100%;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--accent) 8%,
+        var(--accent2) 50%,
+        var(--sky) 85%,
+        transparent 100%
+      );
+      border-radius: 99px;
+    }
+
+    .timeline-item{
+      position: relative;
+      width: 50%;
+      padding: 6px 14px;
+    }
+    .timeline-item.left{ left:0; text-align:right; }
+    .timeline-item.right{ left:50%; text-align:left; }
+
+    /* Year markers */
+    .year-marker{
+      display:inline-block;
+      padding: 6px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    /* Event cards */
+    .content{
+      display:inline-block;
+      max-width: 560px;
+      text-align:left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 14px 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .content:hover{
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+    .timeline-item.left .content{ text-align:left; margin-left:auto; }
+
+    .event-title{
+      font-weight: 800;
+      font-size: 15px;
+      margin: 0 0 6px 0;
+      color: var(--text);
+    }
+    .event-author{
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+    .event-desc{
+      color: #374151;
+      font-size: 13px;
+      line-height:1.65;
+      margin-bottom: 4px;
+    }
+
+    /* Category accent borders */
+    .foundation{  border-left: 4px solid var(--sky); }
+    .optimization{ border-left: 4px solid var(--emerald); }
+    .architecture{ border-left: 4px solid var(--amber); }
+    .gpt{ border-left: 4px solid var(--rose); }
+    .attention{ border-left: 4px solid var(--accent2); }
+    .modern{ border-left: 4px solid var(--sky); }
+
+    /* Transformer highlight card */
+    .transformer.highlight{
+      border: 2px solid var(--rose);
+      background: linear-gradient(135deg, rgba(225,29,72,.03) 0%, #fff 100%);
+      box-shadow: 0 4px 20px rgba(225,29,72,.08);
+    }
+    .transformer.highlight:hover{
+      box-shadow: 0 8px 30px rgba(225,29,72,.12);
+    }
+    .star{ color: var(--gold); }
+
+    /* Timeline dots */
+    .timeline-item::after{
+      content:"";
+      position:absolute;
+      top: 22px;
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 2px rgba(79,70,229,.2);
+      transition: transform .2s;
+    }
+    .timeline-item:hover::after{
+      transform: scale(1.3);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.3);
+    }
+    .timeline-item.left::after{ right: -7px; }
+    .timeline-item.right::after{ left: -7px; }
+
+    /* === FOOTER === */
+    .footer{
+      text-align: center;
+      padding: 40px 20px 60px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .footer a{
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1080px){
+      .layout{ grid-template-columns: 1fr; }
+      .timeline::before{ left: 18px; transform:none; }
+      .timeline-item{ width: 100%; padding-left: 44px; padding-right: 0; }
+      .timeline-item.left, .timeline-item.right{ left: 0; text-align:left; }
+      .timeline-item::after{ left: 11px; right:auto; }
+      .timeline-item.left .content{ margin-left:0; }
+      .hero{ padding: 50px 20px 40px; }
+    }
+
+    /* === PRINT STYLES === */
+    @media print{
+      *{ -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+
+      /* Photo frame: decorative border around the whole page */
+      body{
+        margin: 0;
+        padding: 32px;
+        background: #ffffff !important;
+      }
+      body::before{
+        content: "";
+        position: fixed;
+        inset: 12px;
+        border: 3px solid #1e1e2e;
+        border-radius: 8px;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      body::after{
+        content: "";
+        position: fixed;
+        inset: 18px;
+        border: 1px solid rgba(0,0,0,.15);
+        border-radius: 6px;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      .hero{
+        padding: 40px 40px 30px;
+        background: #ffffff !important;
+        border-bottom: 1px solid rgba(0,0,0,.1);
+      }
+
+      .layout{
+        display: grid !important;
+        grid-template-columns: 80fr 67fr !important;
+        gap: 16px;
+        padding: 16px 24px;
+      }
+      .panel{
+        box-shadow: none;
+        border: 1px solid rgba(0,0,0,.1);
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      .timeline-item{
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .content:hover{ transform: none; }
+      .timeline-item:hover::after{ transform: none; }
+      .timeline-item{ animation: none !important; }
+    }
+
+    /* Subtle fade-in animation */
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(20px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+    .timeline-item{
+      animation: fadeUp .5s ease both;
+    }
+    .timeline-item:nth-child(1){ animation-delay:.05s; }
+    .timeline-item:nth-child(2){ animation-delay:.1s; }
+    .timeline-item:nth-child(3){ animation-delay:.15s; }
+    .timeline-item:nth-child(4){ animation-delay:.2s; }
+    .timeline-item:nth-child(5){ animation-delay:.25s; }
+    .timeline-item:nth-child(6){ animation-delay:.3s; }
+    .timeline-item:nth-child(7){ animation-delay:.35s; }
+    .timeline-item:nth-child(8){ animation-delay:.4s; }
+    .timeline-item:nth-child(9){ animation-delay:.45s; }
+    .timeline-item:nth-child(10){ animation-delay:.5s; }
+    .timeline-item:nth-child(11){ animation-delay:.55s; }
+    .timeline-item:nth-child(12){ animation-delay:.6s; }
+    .timeline-item:nth-child(13){ animation-delay:.65s; }
+    .timeline-item:nth-child(14){ animation-delay:.7s; }
+    .timeline-item:nth-child(15){ animation-delay:.75s; }
+    .timeline-item:nth-child(16){ animation-delay:.8s; }
+    .timeline-item:nth-child(17){ animation-delay:.85s; }
+    .timeline-item:nth-child(18){ animation-delay:.9s; }
+    .timeline-item:nth-child(19){ animation-delay:.95s; }
+    .timeline-item:nth-child(20){ animation-delay:1s; }
+  </style>
+</head>
+
+<body>
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-label">The History of Artificial Intelligence</div>
+    <h1>The Art of GPT</h1>
+    <p>
+      From Information Theory to GPT in 200-line MircoGPT. <br>
+      Everything else is just efficiency. - Karpathy
+    </p>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: microGPT source -->
+    <section class="panel code-panel" aria-label="microGPT source code panel">
+      <div class="code-body" id="codeBody">
+        <table class="code-table" id="codeTable">
+          <tbody>
+            <tr><td class="line-num">1</td><td class="line-code"># Loading microGPT source…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RIGHT: timeline -->
+    <section class="panel timeline-panel" aria-label="timeline panel">
+      <div class="timeline">
+
+        <!-- 1948 -->
+        <div class="timeline-item left">
+          <div class="year-marker">1948</div>
+          <div class="content foundation">
+            <div class="event-title">Information Theory</div>
+            <div class="event-author">Claude Shannon</div>
+            <div class="event-desc">
+              Published "A Mathematical Theory of Communication" — the foundation of information theory.
+              Introduced entropy and cross-entropy concepts.
+            </div>
+          </div>
+        </div>
+
+        <!-- 1986 -->
+        <div class="timeline-item right">
+          <div class="year-marker">1986</div>
+          <div class="content foundation">
+            <div class="event-title">Backpropagation Popularized</div>
+            <div class="event-author">Rumelhart, Hinton, Williams</div>
+            <div class="event-desc">
+              Published "Learning representations by back-propagating errors" in Nature.
+              Made backpropagation famous and started the modern deep learning era.
+            </div>
+          </div>
+        </div>
+
+        <!-- 1997 -->
+        <div class="timeline-item left">
+          <div class="year-marker">1997</div>
+          <div class="content architecture">
+            <div class="event-title">LSTM</div>
+            <div class="event-author">Sepp Hochreiter & Jürgen Schmidhuber</div>
+            <div class="event-desc">
+              "Long Short-Term Memory" dominated sequence modeling for 20 years until the Transformer replaced it.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2003 -->
+        <div class="timeline-item right">
+          <div class="year-marker">2003</div>
+          <div class="content architecture">
+            <div class="event-title">Neural Language Models</div>
+            <div class="event-author">Yoshua Bengio et al.</div>
+            <div class="event-desc">
+              A Neural Probabilistic Language Model" — First successful neural language model.
+              Learned distributed word representations and predicted next words.
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- 2012 -->
+        <div class="timeline-item left">
+          <div class="year-marker">2012</div>
+          <div class="content architecture">
+            <div class="event-title">AlexNet</div>
+            <div class="event-author">Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton</div>
+            <div class="event-desc">
+              Won ImageNet by a landslide using deep CNNs on GPUs.
+              Single-handedly reignited the deep learning revolution
+              and proved neural networks could work at scale.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2013 -->
+        <div class="timeline-item right">
+          <div class="year-marker">2013</div>
+          <div class="content foundation">
+            <div class="event-title">Word2Vec</div>
+            <div class="event-author">Tomas Mikolov et al. (Google)</div>
+            <div class="event-desc">
+              "Efficient Estimation of Word Representations in Vector Space".
+              Showed that vector arithmetic captures semantic relationships
+              (king − man + woman ≈ queen).
+            </div>
+          </div>
+        </div>
+
+        <!-- 2015: Adam & Attention -->
+        <div class="timeline-item left">
+          <div class="year-marker">2015</div>
+          <div class="content optimization">
+            <div class="event-title">Adam Optimizer</div>
+            <div class="event-author">Diederik Kingma & Jimmy Ba</div>
+            <div class="event-desc">
+              "Adam: A Method for Stochastic Optimization" — Combines momentum and RMSprop.
+              Became the most widely-used optimizer in deep learning.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2016: ResNet & LayerNorm -->
+        <div class="timeline-item right">
+          <div class="year-marker">2016</div>
+          <div class="content architecture">
+            <div class="event-title">ResNet</div>
+            <div class="event-author">Kaiming He et al.</div>
+            <div class="event-desc">
+              "Deep Residual Learning for Image Recognition" — Won CVPR Best Paper.
+              Residual connections enable training of 100+ layer networks.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2017: THE TRANSFORMER -->
+        <div class="timeline-item left" id="transformer">
+          <div class="year-marker" style="background: rgba(225,29,72,.06); color: var(--rose); border-color: rgba(225,29,72,.2);">2017</div>
+          <div class="content transformer highlight">
+            <div class="event-title"><span class="star">⭐</span> ATTENTION IS ALL YOU NEED</div>
+            <div class="event-author">Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin</div>
+            <div class="event-desc">
+              <strong>THE MOST IMPORTANT PAPER!</strong><br>
+              Introduced the Transformer architecture: Multi-head self-attention, positional encoding,
+              encoder-decoder structure. No recurrence or convolution needed.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2018: GPT-1 & BERT -->
+        <div class="timeline-item right">
+          <div class="year-marker">2018</div>
+          <div class="content gpt">
+            <div class="event-title">GPT-1</div>
+            <div class="event-author">Alec Radford et al. (OpenAI)</div>
+            <div class="event-desc">
+              "Improving Language Understanding by Generative Pre-Training" —
+              Decoder-only Transformer trained autoregressively. Pre-training + fine-tuning paradigm.
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item left" style="margin-top: -16px;">
+          <div class="content architecture">
+            <div class="event-title">BERT</div>
+            <div class="event-author">Jacob Devlin et al. (Google)</div>
+            <div class="event-desc">
+              "BERT: Pre-training of Deep Bidirectional Transformers" —
+              Bidirectional encoder using masked language modeling.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2019: GPT-2 -->
+        <div class="timeline-item right">
+          <div class="year-marker">2019</div>
+          <div class="content gpt">
+            <div class="event-title">GPT-2</div>
+            <div class="event-author">Alec Radford et al. (OpenAI)</div>
+            <div class="event-desc">
+              "Language Models are Unsupervised Multitask Learners" —
+              10× larger than GPT-1. Demonstrated zero-shot task transfer.
+              Generated surprisingly coherent text.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2020: GPT-3 -->
+        <div class="timeline-item left">
+          <div class="year-marker">2020</div>
+          <div class="content gpt">
+            <div class="event-title">GPT-3</div>
+            <div class="event-author">Tom Brown et al. (OpenAI)</div>
+            <div class="event-desc">
+              "Language Models are Few-Shot Learners" — 100× larger than GPT-2.
+              Demonstrated in-context learning and few-shot learning.
+              Showed emergent abilities at scale.
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item right" style="margin-top: -16px;">
+          <div class="content foundation">
+            <div class="event-title">Scaling Laws</div>
+            <div class="event-author">Jared Kaplan et al. (OpenAI)</div>
+            <div class="event-desc">
+              "Scaling Laws for Neural Language Models" — Showed that loss decreases
+              predictably with more data, compute, and parameters.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2022: ChatGPT / RLHF -->
+        <div class="timeline-item left">
+          <div class="year-marker">2022</div>
+          <div class="content gpt">
+            <div class="event-title">ChatGPT & RLHF</div>
+            <div class="event-author">OpenAI</div>
+            <div class="event-desc">
+              InstructGPT + ChatGPT launch. Reinforcement Learning from Human Feedback
+              (RLHF) aligned language models with human intent.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2023: GPT-4 -->
+        <div class="timeline-item right">
+          <div class="year-marker">2023</div>
+          <div class="content gpt">
+            <div class="event-title">GPT-4</div>
+            <div class="event-author">OpenAI</div>
+            <div class="event-desc">
+              Multimodal model accepting images and text. State-of-the-art performance
+              on reasoning benchmarks.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+
+  <script>
+    const MICROGPT_RAW =
+      "https://gist.githubusercontent.com/karpathy/8627fe009c40f57531cb18360106ce95/raw/cf7331b50c97c33b121b27b495fda181ca44f0bf/microgpt.py";
+
+    const codeTable = document.getElementById("codeTable");
+
+    function renderCode(text){
+      const lines = text.split("\n");
+      // Highlight full block first via a hidden element
+      const tmp = document.createElement("code");
+      tmp.className = "language-python";
+      tmp.textContent = text;
+      if(window.Prism){
+        Prism.highlightElement(tmp);
+      }
+      // Split highlighted HTML by newlines
+      const highlightedLines = tmp.innerHTML.split("\n");
+
+      const tbody = document.createElement("tbody");
+      for(let i = 0; i < highlightedLines.length; i++){
+        const tr = document.createElement("tr");
+        const tdNum = document.createElement("td");
+        tdNum.className = "line-num";
+        tdNum.textContent = i + 1;
+        const tdCode = document.createElement("td");
+        tdCode.className = "line-code";
+        tdCode.innerHTML = highlightedLines[i] || " ";
+        tr.appendChild(tdNum);
+        tr.appendChild(tdCode);
+        tbody.appendChild(tr);
+      }
+      codeTable.innerHTML = "";
+      codeTable.appendChild(tbody);
+    }
+
+    async function loadMicroGPT(){
+      try{
+        renderCode("# Loading microGPT source\u2026");
+
+        const res = await fetch(MICROGPT_RAW, { cache: "no-store" });
+        if(!res.ok) throw new Error("HTTP " + res.status);
+
+        const text = await res.text();
+        renderCode(text);
+
+      } catch (e){
+        renderCode(
+          "# Failed to load microgpt.py from the gist raw URL.\n" +
+          "# Reason: " + String(e) + "\n" +
+          "#\n" +
+          "# If you are opening this file locally, some browsers block fetch() due to CORS/file:// restrictions.\n" +
+          '# Fix: run a local server (e.g. \"python3 -m http.server\") and open http://localhost:8000'
+        );
+      }
+    }
+
+    loadMicroGPT();
+  </script>
+</body>
+</html>
